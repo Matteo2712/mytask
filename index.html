@@ -107,7 +107,7 @@ main {
 
 .task-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   padding: 13px 14px;
   cursor: pointer;
@@ -123,21 +123,39 @@ main {
   word-break: break-word;
 }
 
-.task-info-row {
+/* riga 2: data + progresso + cestino */
+.task-line2 {
   display: flex;
-  gap: 10px;
-  margin-top: 5px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.task-line2 .date-value {
+  flex: 1;
+  min-width: 0;
   font-size: 12.5px;
   color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.task-info-row .info-value { color: var(--text-dim); }
-.task-info-row .no-date { opacity: 0.6; font-style: italic; }
-.task-info-row .sep { opacity: 0.4; }
+.task-line2 .date-value.no-date { opacity: 0.6; font-style: italic; }
+
+/* riga 3: prossimo passo, troncato */
+.task-line3 {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .expand-arrow {
   color: var(--text-dim);
   font-size: 13px;
   flex-shrink: 0;
+  margin-top: 3px;
   transition: transform 0.15s ease;
 }
 .expand-arrow.open { transform: rotate(90deg); }
@@ -742,13 +760,13 @@ function renderTaskCard(task, info) {
       <span class="expand-arrow ${isOpen ? 'open' : ''}">▶</span>
       <div class="task-main">
         <div class="task-title">${escapeHtml(task.title)}</div>
-        <div class="task-info-row">
-          <span class="info-value ${!info.nextDate ? 'no-date' : ''}">${nextDateLabel}</span>
-          ${info.total > 0 ? `<span class="sep">·</span><span class="info-value">${escapeHtml(nextStepLabel)}</span>` : ''}
+        <div class="task-line2">
+          <span class="date-value ${!info.nextDate ? 'no-date' : ''}">${nextDateLabel}</span>
+          <span class="progress-badge ${progressComplete ? 'complete' : ''}">${info.doneCount}/${info.total}</span>
+          <button class="task-delete-btn" data-delete-task="${task.id}">${TRASH_SVG}</button>
         </div>
+        ${info.total > 0 ? `<div class="task-line3">${escapeHtml(nextStepLabel)}</div>` : ''}
       </div>
-      <span class="progress-badge ${progressComplete ? 'complete' : ''}">${info.doneCount}/${info.total}</span>
-      <button class="task-delete-btn" data-delete-task="${task.id}">${TRASH_SVG}</button>
     </div>
     ${isOpen ? renderSubtasksPanel(task.id) : ''}
   `;
