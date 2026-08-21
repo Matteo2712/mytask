@@ -277,6 +277,90 @@ main {
   text-align: left;
 }
 
+/* ---------- Note (Prossimi passi / Situazione) ---------- */
+
+.notes-section {
+  border-top: 1px solid var(--border);
+  padding: 2px 8px 6px;
+}
+
+.note-row { padding: 4px 0; }
+
+.note-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 0;
+}
+.note-label .note-arrow {
+  font-size: 9px;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.note-label .note-arrow.open { transform: rotate(90deg); }
+
+.note-body { padding: 2px 0 6px 15px; }
+
+.note-text {
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+.note-text.empty { opacity: 0.55; font-style: italic; }
+
+.note-edit-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  padding: 6px 0 0;
+  cursor: pointer;
+}
+
+.note-textarea {
+  width: 100%;
+  min-height: 70px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.note-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
+.note-edit-actions button {
+  flex: 1;
+  padding: 7px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.note-save-btn { background: var(--accent); color: white; }
+.note-cancel-btn { background: var(--bg-elevated); color: var(--text-dim); border: 1px solid var(--border) !important; }
+
+/* ---------- Sync Calendar button ---------- */
+
+.sync-cal-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sync-cal-btn:active { background: var(--bg); }
+
 /* ---------- Composer ---------- */
 
 .composer {
@@ -415,9 +499,12 @@ main {
 
   <header class="app-header">
     <div class="logo">My<span class="accent">Task</span></div>
-    <div class="user-pill" id="userPill">
-      <span class="sync-dot" id="syncDot"></span>
-      <span class="user-email" id="userEmail">accedi</span>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="sync-cal-btn" id="syncCalBtn" title="Confronta le date con Google Calendar (richiede a Claude di eseguire il check)">Sync Calendar</button>
+      <div class="user-pill" id="userPill">
+        <span class="sync-dot" id="syncDot"></span>
+        <span class="user-email" id="userEmail">accedi</span>
+      </div>
     </div>
   </header>
 
@@ -500,6 +587,8 @@ let authMode = 'login';
 let expanded = new Set();      // id dei task padre attualmente espansi
 let subtaskModalContext = null; // { mode: 'new'|'edit', parentId, taskId, selectedChi }
 let dragState = null;           // { parentId, draggedId }
+let expandedNotes = new Set();  // chiavi `${taskId}|next_steps` / `${taskId}|situation` espanse
+let editingNote = null;         // chiave `${taskId}|field` attualmente in modifica, o null
 
 const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3 6h18"></path>
@@ -560,6 +649,8 @@ function taskToRow(task) {
     done: task.done,
     position: task.position,
     due_date: task.due_date ?? null,
+    next_steps: task.next_steps ?? null,
+    situation: task.situation ?? null,
   };
 }
 
@@ -621,6 +712,7 @@ async function fetchTasksFromDB() {
     tasks = data.map(r => ({
       id: r.id, parent_id: r.parent_id, title: r.title, notes: r.notes,
       chi: r.chi, done: r.done, position: r.position, due_date: r.due_date,
+      next_steps: r.next_steps, situation: r.situation,
     }));
     saveTasksToLocal();
     render();
@@ -636,8 +728,16 @@ function addParentTask(title) {
   const task = {
     id: crypto.randomUUID(), parent_id: null, title: title.trim(),
     notes: null, chi: null, done: false, position: siblings.length, due_date: null,
+    next_steps: null, situation: null,
   };
   tasks.push(task);
+  saveTasksToLocal(); render(); saveTaskToDB(task);
+}
+
+function updateTaskNote(taskId, field, value) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task[field] = value.trim() || null;
   saveTasksToLocal(); render(); saveTaskToDB(task);
 }
 
@@ -768,17 +868,67 @@ function renderTaskCard(task, info) {
         ${info.total > 0 ? `<div class="task-line3">${escapeHtml(nextStepLabel)}</div>` : ''}
       </div>
     </div>
-    ${isOpen ? renderSubtasksPanel(task.id) : ''}
+    ${isOpen ? renderSubtasksPanel(task) : ''}
   `;
   return card;
 }
 
-function renderSubtasksPanel(parentId) {
+function renderSubtasksPanel(parentTask) {
+  const parentId = parentTask.id;
   const subs = orderSubtasks(getSubtasks(parentId));
   return `
     <div class="subtasks" data-subtasks-of="${parentId}">
       ${subs.map(s => renderSubtaskRow(s)).join('')}
       <button class="add-subtask-btn" data-add-sub="${parentId}">+ aggiungi sottotask</button>
+      ${renderNotesSection(parentTask)}
+    </div>
+  `;
+}
+
+function renderNotesSection(task) {
+  return `
+    <div class="notes-section">
+      ${renderNoteRow(task, 'next_steps', 'Prossimi passi')}
+      ${renderNoteRow(task, 'situation', 'Situazione')}
+    </div>
+  `;
+}
+
+function renderNoteRow(task, field, label) {
+  const key = `${task.id}|${field}`;
+  const isOpen = expandedNotes.has(key);
+  const isEditing = editingNote === key;
+  const value = task[field] || '';
+
+  let bodyHtml = '';
+  if (isOpen) {
+    if (isEditing) {
+      bodyHtml = `
+        <div class="note-body">
+          <textarea class="note-textarea" id="notearea-${task.id}-${field}">${escapeHtml(value)}</textarea>
+          <div class="note-edit-actions">
+            <button class="note-save-btn" data-save-note="${key}">Salva</button>
+            <button class="note-cancel-btn" data-cancel-note="${key}">Annulla</button>
+          </div>
+        </div>
+      `;
+    } else {
+      bodyHtml = `
+        <div class="note-body">
+          <div class="note-text ${!value ? 'empty' : ''}">${value ? escapeHtml(value) : 'Nessuna nota'}</div>
+          <button class="note-edit-btn" data-edit-note="${key}">✎ modifica</button>
+        </div>
+      `;
+    }
+  }
+
+  return `
+    <div class="note-row">
+      <div class="note-label" data-toggle-note="${key}">
+        <span class="note-arrow ${isOpen ? 'open' : ''}">▶</span>
+        <span>${label}</span>
+      </div>
+      ${bodyHtml}
     </div>
   `;
 }
@@ -816,11 +966,51 @@ document.getElementById('taskList').addEventListener('click', (e) => {
   const deleteId = e.target.dataset.deleteTask;
   const addSubId = e.target.dataset.addSub;
   const editSubId = e.target.closest('[data-edit-sub]')?.dataset.editSub;
+  const toggleNoteKey = e.target.closest('[data-toggle-note]')?.dataset.toggleNote;
+  const editNoteKey = e.target.closest('[data-edit-note]')?.dataset.editNote;
+  const saveNoteKey = e.target.closest('[data-save-note]')?.dataset.saveNote;
+  const cancelNoteKey = e.target.closest('[data-cancel-note]')?.dataset.cancelNote;
 
   if (toggleSubId) { toggleSubtaskDone(toggleSubId); return; }
   if (deleteId) { e.stopPropagation(); deleteTask(deleteId); return; }
   if (addSubId) { openSubtaskModal({ mode: 'new', parentId: addSubId }); return; }
   if (editSubId) { openSubtaskModal({ mode: 'edit', taskId: editSubId }); return; }
+  if (saveNoteKey) {
+    e.stopPropagation();
+    const [taskId, field] = saveNoteKey.split('|');
+    const textarea = document.getElementById(`notearea-${taskId}-${field}`);
+    const value = textarea ? textarea.value : '';
+    editingNote = null;
+    updateTaskNote(taskId, field, value);
+    return;
+  }
+  if (cancelNoteKey) {
+    e.stopPropagation();
+    editingNote = null;
+    render();
+    return;
+  }
+  if (editNoteKey) {
+    e.stopPropagation();
+    editingNote = editNoteKey;
+    expandedNotes.add(editNoteKey);
+    render();
+    const [taskId, field] = editNoteKey.split('|');
+    const ta = document.getElementById(`notearea-${taskId}-${field}`);
+    if (ta) ta.focus();
+    return;
+  }
+  if (toggleNoteKey) {
+    e.stopPropagation();
+    if (expandedNotes.has(toggleNoteKey)) {
+      expandedNotes.delete(toggleNoteKey);
+      if (editingNote === toggleNoteKey) editingNote = null;
+    } else {
+      expandedNotes.add(toggleNoteKey);
+    }
+    render();
+    return;
+  }
   if (expandId) {
     if (expanded.has(expandId)) expanded.delete(expandId); else expanded.add(expandId);
     render();
