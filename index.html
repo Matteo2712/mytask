@@ -17,6 +17,7 @@
   --bg: #0f172a;
   --bg-elevated: #1e293b;
   --bg-card: #1e293b;
+  --bg-sub: #172033;
   --border: #334155;
   --text: #f1f5f9;
   --text-dim: #94a3b8;
@@ -56,11 +57,7 @@ header.app-header {
   flex-shrink: 0;
 }
 
-.logo {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
+.logo { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
 .logo .accent { color: var(--accent); }
 
 .user-pill {
@@ -75,20 +72,11 @@ header.app-header {
   max-width: 60%;
 }
 
-.sync-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--success);
-  flex-shrink: 0;
-}
+.sync-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
 .sync-dot.syncing { background: var(--warning); animation: pulse 1s infinite; }
 .sync-dot.pending { background: var(--danger); }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 .user-email {
   font-size: 13px;
@@ -107,12 +95,7 @@ main {
   -webkit-overflow-scrolling: touch;
 }
 
-.empty-state {
-  text-align: center;
-  color: var(--text-dim);
-  margin-top: 60px;
-  font-size: 14px;
-}
+.empty-state { text-align: center; color: var(--text-dim); margin-top: 60px; font-size: 14px; }
 
 .task {
   background: var(--bg-card);
@@ -124,94 +107,157 @@ main {
 
 .task-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 13px 14px;
+  cursor: pointer;
+}
+.task-row:active { background: rgba(255,255,255,0.03); }
+
+.task-main { flex: 1; min-width: 0; }
+
+.task-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+.progress-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(59,130,246,0.12);
+  padding: 1px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.progress-badge.complete { color: var(--success); background: rgba(34,197,94,0.12); }
+
+.task-info-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+.task-info-row .info-label { color: var(--text-dim); opacity: 0.75; margin-right: 3px; }
+.task-info-row .info-value { color: var(--text); }
+.task-info-row .no-date { opacity: 0.6; font-style: italic; }
+
+.expand-arrow {
+  color: var(--text-dim);
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+.expand-arrow.open { transform: rotate(90deg); }
+
+.task-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 15px;
+  padding: 4px 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ---------- Subtasks ---------- */
+
+.subtasks {
+  border-top: 1px solid var(--border);
+  background: var(--bg-sub);
+  padding: 4px 8px;
+}
+
+.subtask-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.subtask-row:last-of-type { border-bottom: none; }
+.subtask-row.draggable { cursor: grab; }
+.subtask-row.drag-over { border-top: 2px solid var(--accent); }
+
 .checkbox {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 2px solid var(--border);
   flex-shrink: 0;
-  margin-top: 1px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
-.checkbox.checked {
-  background: var(--accent);
-  border-color: var(--accent);
+.checkbox.checked { background: var(--accent); border-color: var(--accent); }
+.checkbox.checked::after { content: "✓"; color: white; font-size: 12px; font-weight: 700; }
+
+.subtask-body { flex: 1; min-width: 0; }
+.subtask-title { font-size: 14px; line-height: 1.3; word-break: break-word; }
+.subtask-title.done { color: var(--text-dim); text-decoration: line-through; }
+
+.subtask-meta { display: flex; gap: 8px; margin-top: 3px; align-items: center; }
+
+.date-badge {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
 }
-.checkbox.checked::after {
-  content: "✓";
-  color: white;
-  font-size: 13px;
+.date-badge.empty { opacity: 0.55; font-style: italic; }
+
+.chi-badge {
+  font-size: 11px;
   font-weight: 700;
-}
-
-.task-body { flex: 1; min-width: 0; }
-
-.task-title {
-  font-size: 15px;
-  line-height: 1.35;
-  word-break: break-word;
-}
-.task-title.done {
-  color: var(--text-dim);
-  text-decoration: line-through;
-}
-
-.task-meta {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
-.task-actions {
-  display: flex;
-  gap: 4px;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 6px;
+  cursor: pointer;
   flex-shrink: 0;
 }
-.icon-btn {
+.chi-badge.empty { background: var(--border); color: var(--text-dim); font-weight: 500; }
+
+.subtask-delete-btn {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 16px;
-  padding: 4px 6px;
+  font-size: 14px;
+  padding: 4px;
   cursor: pointer;
-  border-radius: 8px;
-}
-.icon-btn:active { background: var(--bg); }
-
-.subtasks {
-  border-top: 1px solid var(--border);
-  padding: 4px 14px 8px 40px;
+  flex-shrink: 0;
 }
 
-.subtask-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 7px 0;
+.drag-handle {
+  color: var(--text-dim);
+  opacity: 0.5;
+  font-size: 13px;
+  flex-shrink: 0;
+  cursor: grab;
+  padding: 0 2px;
 }
-.subtask-row .checkbox { width: 18px; height: 18px; }
-.subtask-row .task-title { font-size: 14px; }
 
 .add-subtask-btn {
   background: none;
   border: none;
   color: var(--accent);
   font-size: 13px;
-  padding: 6px 0;
+  padding: 9px 8px;
   cursor: pointer;
+  width: 100%;
+  text-align: left;
 }
 
-/* ---------- Composer (aggiungi task) ---------- */
+/* ---------- Composer ---------- */
 
 .composer {
   position: fixed;
@@ -223,7 +269,6 @@ main {
   padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
   background: linear-gradient(to top, var(--bg) 60%, transparent);
 }
-
 .composer form {
   display: flex;
   gap: 8px;
@@ -232,17 +277,8 @@ main {
   border-radius: var(--radius);
   padding: 6px 6px 6px 14px;
 }
-
-.composer input[type="text"] {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 15px;
-  outline: none;
-}
+.composer input[type="text"] { flex: 1; background: none; border: none; color: var(--text); font-size: 15px; outline: none; }
 .composer input::placeholder { color: var(--text-dim); }
-
 .composer button {
   background: var(--accent);
   color: white;
@@ -255,7 +291,7 @@ main {
   flex-shrink: 0;
 }
 
-/* ---------- Modal (auth / settings) ---------- */
+/* ---------- Modal ---------- */
 
 .modal-backdrop {
   position: fixed;
@@ -279,16 +315,11 @@ main {
 }
 
 .modal h2 { margin: 0 0 16px; font-size: 18px; }
-
-.modal label {
-  display: block;
-  font-size: 13px;
-  color: var(--text-dim);
-  margin: 12px 0 6px;
-}
-
+.modal label { display: block; font-size: 13px; color: var(--text-dim); margin: 12px 0 6px; }
 .modal input[type="email"],
-.modal input[type="password"] {
+.modal input[type="password"],
+.modal input[type="date"],
+.modal select {
   width: 100%;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -298,7 +329,6 @@ main {
   font-size: 15px;
   outline: none;
 }
-
 .modal .primary-btn {
   width: 100%;
   background: var(--accent);
@@ -311,7 +341,6 @@ main {
   margin-top: 18px;
   cursor: pointer;
 }
-
 .modal .secondary-btn {
   width: 100%;
   background: none;
@@ -322,7 +351,6 @@ main {
   margin-top: 6px;
   cursor: pointer;
 }
-
 .modal .danger-btn {
   width: 100%;
   background: none;
@@ -334,24 +362,9 @@ main {
   margin-top: 18px;
   cursor: pointer;
 }
-
-.modal .close-x {
-  float: right;
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.form-error {
-  color: var(--danger);
-  font-size: 13px;
-  margin-top: 10px;
-  display: none;
-}
+.modal .close-x { float: right; background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+.form-error { color: var(--danger); font-size: 13px; margin-top: 10px; display: none; }
 .form-error.visible { display: block; }
-
 .settings-row {
   display: flex;
   justify-content: space-between;
@@ -361,6 +374,20 @@ main {
   font-size: 14px;
 }
 .settings-row:last-of-type { border-bottom: none; }
+
+.chi-options { display: flex; gap: 8px; margin-top: 4px; }
+.chi-options button {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chi-options button.selected { background: var(--accent); border-color: var(--accent); color: white; }
 </style>
 </head>
 <body>
@@ -375,7 +402,7 @@ main {
   </header>
 
   <main id="taskList">
-    <div class="empty-state" id="emptyState">Nessun task ancora. Aggiungine uno qui sotto.</div>
+    <div class="empty-state">Nessun task ancora. Aggiungine uno qui sotto.</div>
   </main>
 
   <div class="composer">
@@ -390,36 +417,44 @@ main {
     <div class="modal">
       <button class="close-x" id="authModalClose">✕</button>
       <h2 id="authModalTitle">Accedi</h2>
-
       <label for="authEmail">Email</label>
       <input type="email" id="authEmail" autocomplete="email">
-
       <label for="authPassword">Password</label>
       <input type="password" id="authPassword" autocomplete="current-password">
-
       <div class="form-error" id="authError"></div>
-
       <button class="primary-btn" id="authSubmitBtn">Accedi</button>
       <button class="secondary-btn" id="authToggleMode">Non hai un account? Registrati</button>
     </div>
   </div>
 
-  <!-- Modale impostazioni (utente loggato) -->
+  <!-- Modale impostazioni -->
   <div class="modal-backdrop hidden" id="settingsModalBackdrop">
     <div class="modal">
       <button class="close-x" id="settingsModalClose">✕</button>
       <h2>Impostazioni</h2>
-
-      <div class="settings-row">
-        <span>Account</span>
-        <span id="settingsEmail" style="color:var(--text-dim)"></span>
-      </div>
-      <div class="settings-row">
-        <span>Stato sync</span>
-        <span id="settingsSyncStatus" style="color:var(--text-dim)"></span>
-      </div>
-
+      <div class="settings-row"><span>Account</span><span id="settingsEmail" style="color:var(--text-dim)"></span></div>
+      <div class="settings-row"><span>Stato sync</span><span id="settingsSyncStatus" style="color:var(--text-dim)"></span></div>
       <button class="danger-btn" id="logoutBtn">Esci</button>
+    </div>
+  </div>
+
+  <!-- Modale nuovo/modifica sottotask -->
+  <div class="modal-backdrop hidden" id="subtaskModalBackdrop">
+    <div class="modal">
+      <button class="close-x" id="subtaskModalClose">✕</button>
+      <h2 id="subtaskModalTitle">Nuovo sottotask</h2>
+      <label for="subtaskTitleInput">Titolo</label>
+      <input type="text" id="subtaskTitleInput" placeholder="es. Check prezzi di vendita attuali">
+      <label for="subtaskDateInput">Data (opzionale)</label>
+      <input type="date" id="subtaskDateInput">
+      <label>Chi</label>
+      <div class="chi-options" id="chiOptions">
+        <button type="button" data-chi="M">M</button>
+        <button type="button" data-chi="C">C</button>
+        <button type="button" data-chi="M+C">M+C</button>
+        <button type="button" data-chi="">—</button>
+      </div>
+      <button class="primary-btn" id="subtaskSaveBtn">Salva</button>
     </div>
   </div>
 
@@ -433,95 +468,76 @@ main {
 
 const SUPABASE_URL = 'https://edlvmkjctzhqoswpppds.supabase.co/';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbHZta2pjdHpocW9zd3BwcGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjEyMDEsImV4cCI6MjA5NjczNzIwMX0.Oq0TyYWG4LotZhH57LQtklUdVho_kQ15KlSs8KGO2AM';
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ---------- Chiavi localStorage ----------
 const LS_TASKS = 'mt_tasks';
 const LS_PENDING_SYNC = 'mt_pending_sync';
 const MAX_RETRIES = 8;
 
-// ---------- Stato in memoria ----------
 let currentUser = null;
-let tasks = [];        // array piatto, ordinato per position
-let authMode = 'login'; // 'login' | 'signup'
+let tasks = [];
+let authMode = 'login';
+let expanded = new Set();      // id dei task padre attualmente espansi
+let subtaskModalContext = null; // { mode: 'new'|'edit', parentId, taskId, selectedChi }
+let dragState = null;           // { parentId, draggedId }
 
-// ================= UTILITY LOCALSTORAGE =================
+// ================= LOCALSTORAGE =================
 
 function loadTasksFromLocal() {
-  try {
-    const raw = localStorage.getItem(LS_TASKS);
-    tasks = raw ? JSON.parse(raw) : [];
-  } catch {
-    tasks = [];
-  }
+  try { tasks = JSON.parse(localStorage.getItem(LS_TASKS)) || []; }
+  catch { tasks = []; }
 }
-
-function saveTasksToLocal() {
-  localStorage.setItem(LS_TASKS, JSON.stringify(tasks));
-}
+function saveTasksToLocal() { localStorage.setItem(LS_TASKS, JSON.stringify(tasks)); }
 
 function loadPendingQueue() {
-  try {
-    const raw = localStorage.getItem(LS_PENDING_SYNC);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(LS_PENDING_SYNC)) || []; }
+  catch { return []; }
 }
-
 function savePendingQueue(queue) {
   localStorage.setItem(LS_PENDING_SYNC, JSON.stringify(queue));
   updateSyncIndicator();
 }
-
 function enqueueSync(fnName, args) {
   const queue = loadPendingQueue();
-  queue.push({
-    fn: fnName,
-    args,
-    ts: Date.now(),
-    attempts: 0,
-  });
+  queue.push({ fn: fnName, args, ts: Date.now(), attempts: 0 });
   savePendingQueue(queue);
 }
 
-// ================= INDICATORE DI STATO SYNC =================
+// ================= SYNC INDICATOR =================
 
 function updateSyncIndicator(state) {
   const dot = document.getElementById('syncDot');
   if (!dot) return;
   const pending = loadPendingQueue().length;
-
   dot.classList.remove('syncing', 'pending');
-  if (state === 'syncing') {
-    dot.classList.add('syncing');
-  } else if (pending > 0) {
-    dot.classList.add('pending');
-  }
+  if (state === 'syncing') dot.classList.add('syncing');
+  else if (pending > 0) dot.classList.add('pending');
 
   const settingsStatus = document.getElementById('settingsSyncStatus');
   if (settingsStatus) {
-    settingsStatus.textContent = pending > 0
-      ? `${pending} modifiche in coda`
-      : 'Tutto sincronizzato';
+    settingsStatus.textContent = pending > 0 ? `${pending} modifiche in coda` : 'Tutto sincronizzato';
   }
 }
 
-// ================= FUNZIONI DB (con coda offline) =================
+// ================= DB (con coda offline) =================
+
+function taskToRow(task) {
+  return {
+    id: task.id,
+    user_id: currentUser.id,
+    parent_id: task.parent_id,
+    title: task.title,
+    notes: task.notes ?? null,
+    chi: task.chi ?? null,
+    done: task.done,
+    position: task.position,
+    due_date: task.due_date ?? null,
+  };
+}
 
 async function saveTaskToDB(task) {
   try {
-    const { error } = await sb.from('Task_items').upsert({
-      id: task.id,
-      user_id: currentUser.id,
-      parent_id: task.parent_id,
-      title: task.title,
-      notes: task.notes ?? null,
-      done: task.done,
-      position: task.position,
-      due_date: task.due_date ?? null,
-    });
+    const { error } = await sb.from('Task_items').upsert(taskToRow(task));
     if (error) throw error;
     updateSyncIndicator();
   } catch (err) {
@@ -541,75 +557,43 @@ async function deleteTaskToDB(taskId) {
   }
 }
 
-const DB_FUNCTIONS = { saveTaskToDB, deleteTaskToDB };
+async function callRaw(fnName, args) {
+  if (fnName === 'saveTaskToDB') return await sb.from('Task_items').upsert(taskToRow(args[0]));
+  if (fnName === 'deleteTaskToDB') return await sb.from('Task_items').delete().eq('id', args[0]);
+  return { error: new Error('funzione sconosciuta: ' + fnName) };
+}
 
 async function flushPendingSync() {
   if (!currentUser || !navigator.onLine) return;
   let queue = loadPendingQueue();
   if (queue.length === 0) return;
-
   updateSyncIndicator('syncing');
-
-  // Rinfresca la sessione prima di ritentare: un token scaduto durante il
-  // periodo offline farebbe fallire ogni retry.
-  try {
-    await sb.auth.refreshSession();
-  } catch {
-    // se il refresh fallisce si tenta comunque il flush, gestirà l'errore per item
-  }
+  try { await sb.auth.refreshSession(); } catch {}
 
   const remaining = [];
   for (const item of queue) {
-    if (item.attempts >= MAX_RETRIES) {
-      remaining.push(item); // resta in coda ma non si ritenta più in automatico
-      continue;
-    }
+    if (item.attempts >= MAX_RETRIES) { remaining.push(item); continue; }
     try {
-      const fn = DB_FUNCTIONS[item.fn];
       const { error } = await callRaw(item.fn, item.args);
       if (error) throw error;
-    } catch (err) {
+    } catch {
       item.attempts += 1;
       remaining.push(item);
     }
   }
-
   savePendingQueue(remaining);
   updateSyncIndicator();
-}
-
-// Esegue la chiamata Supabase "grezza" (senza ri-accodare in caso di fallimento,
-// ci pensa flushPendingSync incrementando gli attempts).
-async function callRaw(fnName, args) {
-  if (fnName === 'saveTaskToDB') {
-    const task = args[0];
-    return await sb.from('Task_items').upsert({
-      id: task.id,
-      user_id: currentUser.id,
-      parent_id: task.parent_id,
-      title: task.title,
-      notes: task.notes ?? null,
-      done: task.done,
-      position: task.position,
-      due_date: task.due_date ?? null,
-    });
-  }
-  if (fnName === 'deleteTaskToDB') {
-    const taskId = args[0];
-    return await sb.from('Task_items').delete().eq('id', taskId);
-  }
-  return { error: new Error('funzione sconosciuta: ' + fnName) };
 }
 
 async function fetchTasksFromDB() {
   if (!currentUser || !navigator.onLine) return;
   try {
-    const { data, error } = await sb
-      .from('Task_items')
-      .select('*')
-      .order('position', { ascending: true });
+    const { data, error } = await sb.from('Task_items').select('*');
     if (error) throw error;
-    tasks = data.map(mapDbRowToTask);
+    tasks = data.map(r => ({
+      id: r.id, parent_id: r.parent_id, title: r.title, notes: r.notes,
+      chi: r.chi, done: r.done, position: r.position, due_date: r.due_date,
+    }));
     saveTasksToLocal();
     render();
   } catch (err) {
@@ -617,128 +601,177 @@ async function fetchTasksFromDB() {
   }
 }
 
-function mapDbRowToTask(row) {
-  return {
-    id: row.id,
-    parent_id: row.parent_id,
-    title: row.title,
-    notes: row.notes,
-    done: row.done,
-    position: row.position,
-    due_date: row.due_date,
-  };
-}
-
 // ================= LOGICA TASK / SOTTOTASK =================
 
-function addTask(title, parentId = null) {
-  const siblings = tasks.filter(t => t.parent_id === parentId);
+function addParentTask(title) {
+  const siblings = tasks.filter(t => t.parent_id === null);
   const task = {
-    id: crypto.randomUUID(),
-    parent_id: parentId,
-    title: title.trim(),
-    notes: null,
-    done: false,
-    position: siblings.length,
-    due_date: null,
+    id: crypto.randomUUID(), parent_id: null, title: title.trim(),
+    notes: null, chi: null, done: false, position: siblings.length, due_date: null,
   };
   tasks.push(task);
-  saveTasksToLocal();
-  render();
-  saveTaskToDB(task);
+  saveTasksToLocal(); render(); saveTaskToDB(task);
 }
 
-function toggleTaskDone(taskId) {
+function addOrUpdateSubtask({ id, parentId, title, due_date, chi }) {
+  if (id) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    t.title = title; t.due_date = due_date || null; t.chi = chi || null;
+    saveTasksToLocal(); render(); saveTaskToDB(t);
+  } else {
+    const siblings = tasks.filter(t => t.parent_id === parentId);
+    const task = {
+      id: crypto.randomUUID(), parent_id: parentId, title,
+      notes: null, chi: chi || null, done: false,
+      position: siblings.length, due_date: due_date || null,
+    };
+    tasks.push(task);
+    saveTasksToLocal(); render(); saveTaskToDB(task);
+  }
+}
+
+function toggleSubtaskDone(taskId) {
   const task = tasks.find(t => t.id === taskId);
   if (!task) return;
   task.done = !task.done;
-  saveTasksToLocal();
-  render();
-  saveTaskToDB(task);
+  saveTasksToLocal(); render(); saveTaskToDB(task);
 }
 
 function deleteTask(taskId) {
-  // elimina anche i sottotask figli (coerente col cascade lato DB)
   const idsToDelete = new Set([taskId]);
   let changed = true;
   while (changed) {
     changed = false;
     for (const t of tasks) {
-      if (idsToDelete.has(t.parent_id) && !idsToDelete.has(t.id)) {
-        idsToDelete.add(t.id);
-        changed = true;
-      }
+      if (idsToDelete.has(t.parent_id) && !idsToDelete.has(t.id)) { idsToDelete.add(t.id); changed = true; }
     }
   }
   tasks = tasks.filter(t => !idsToDelete.has(t.id));
-  saveTasksToLocal();
-  render();
-  deleteTaskToDB(taskId); // il cascade su Supabase elimina i figli lato server
+  saveTasksToLocal(); render(); deleteTaskToDB(taskId);
+}
+
+// ---- calcolo progresso / prossima data / prossimo passo di un task padre ----
+
+function getSubtasks(parentId) {
+  return tasks.filter(t => t.parent_id === parentId);
+}
+
+function orderSubtasks(subs) {
+  // con data, ordinate per data crescente; senza data, dopo, ordinate per position (drag manuale)
+  const withDate = subs.filter(s => s.due_date).sort((a, b) => a.due_date.localeCompare(b.due_date));
+  const withoutDate = subs.filter(s => !s.due_date).sort((a, b) => a.position - b.position);
+  return [...withDate, ...withoutDate];
+}
+
+function computeParentInfo(parentId) {
+  const subs = getSubtasks(parentId);
+  const total = subs.length;
+  const doneCount = subs.filter(s => s.done).length;
+  const pending = orderSubtasks(subs.filter(s => !s.done));
+  const next = pending[0] || null;
+  return {
+    total, doneCount,
+    nextDate: next ? next.due_date : null,
+    nextStep: next ? next.title : (total > 0 ? 'Completato' : null),
+  };
+}
+
+function formatDate(iso) {
+  if (!iso) return null;
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
 }
 
 // ================= RENDER =================
 
 function render() {
   const listEl = document.getElementById('taskList');
-  const rootTasks = tasks
-    .filter(t => t.parent_id === null)
-    .sort((a, b) => a.position - b.position);
-
-  listEl.innerHTML = '';
 
   if (!currentUser) {
     listEl.innerHTML = '<div class="empty-state">Accedi per vedere e sincronizzare i tuoi task.</div>';
     return;
   }
 
+  const rootTasks = tasks.filter(t => t.parent_id === null).map(t => ({
+    task: t, info: computeParentInfo(t.id),
+  }));
+
+  // ordina: chi ha una prossima data prima (crescente), gli altri sotto (per position)
+  rootTasks.sort((a, b) => {
+    const ad = a.info.nextDate, bd = b.info.nextDate;
+    if (ad && bd) return ad.localeCompare(bd);
+    if (ad && !bd) return -1;
+    if (!ad && bd) return 1;
+    return a.task.position - b.task.position;
+  });
+
+  listEl.innerHTML = '';
+
   if (rootTasks.length === 0) {
     listEl.innerHTML = '<div class="empty-state">Nessun task ancora. Aggiungine uno qui sotto.</div>';
     return;
   }
 
-  for (const task of rootTasks) {
-    listEl.appendChild(renderTaskCard(task));
+  for (const { task, info } of rootTasks) {
+    listEl.appendChild(renderTaskCard(task, info));
   }
 }
 
-function renderTaskCard(task) {
+function renderTaskCard(task, info) {
   const card = document.createElement('div');
   card.className = 'task';
+  const isOpen = expanded.has(task.id);
+  const progressComplete = info.total > 0 && info.doneCount === info.total;
 
-  const subtasks = tasks
-    .filter(t => t.parent_id === task.id)
-    .sort((a, b) => a.position - b.position);
-  const doneCount = subtasks.filter(s => s.done).length;
+  const nextDateLabel = info.nextDate ? formatDate(info.nextDate) : (info.total > 0 ? 'senza data' : '—');
+  const nextStepLabel = info.nextStep || '—';
 
   card.innerHTML = `
-    <div class="task-row">
-      <div class="checkbox ${task.done ? 'checked' : ''}" data-toggle="${task.id}"></div>
-      <div class="task-body">
-        <div class="task-title ${task.done ? 'done' : ''}">${escapeHtml(task.title)}</div>
-        ${subtasks.length ? `<div class="task-meta"><span>${doneCount}/${subtasks.length} sottotask</span></div>` : ''}
+    <div class="task-row" data-toggle-expand="${task.id}">
+      <span class="expand-arrow ${isOpen ? 'open' : ''}">▶</span>
+      <div class="task-main">
+        <div class="task-title">
+          ${escapeHtml(task.title)}
+          <span class="progress-badge ${progressComplete ? 'complete' : ''}">${info.doneCount}/${info.total}</span>
+        </div>
+        <div class="task-info-row">
+          <span><span class="info-label">Prossima data:</span><span class="info-value ${!info.nextDate ? 'no-date' : ''}">${nextDateLabel}</span></span>
+          <span><span class="info-label">Prossimo passo:</span><span class="info-value">${escapeHtml(nextStepLabel)}</span></span>
+        </div>
       </div>
-      <div class="task-actions">
-        <button class="icon-btn" data-delete="${task.id}">🗑</button>
-      </div>
+      <button class="task-delete-btn" data-delete-task="${task.id}">🗑</button>
     </div>
-    <div class="subtasks">
-      ${subtasks.map(renderSubtaskRow).join('')}
-      <button class="add-subtask-btn" data-add-sub="${task.id}">+ sottotask</button>
-    </div>
+    ${isOpen ? renderSubtasksPanel(task.id) : ''}
   `;
   return card;
 }
 
-function renderSubtaskRow(sub) {
+function renderSubtasksPanel(parentId) {
+  const subs = orderSubtasks(getSubtasks(parentId));
   return `
-    <div class="subtask-row">
-      <div class="checkbox ${sub.done ? 'checked' : ''}" data-toggle="${sub.id}"></div>
-      <div class="task-body">
-        <div class="task-title ${sub.done ? 'done' : ''}">${escapeHtml(sub.title)}</div>
+    <div class="subtasks" data-subtasks-of="${parentId}">
+      ${subs.map(s => renderSubtaskRow(s)).join('')}
+      <button class="add-subtask-btn" data-add-sub="${parentId}">+ aggiungi sottotask</button>
+    </div>
+  `;
+}
+
+function renderSubtaskRow(sub) {
+  const draggable = !sub.due_date; // trascinabili solo quelli senza data
+  const dateLabel = sub.due_date ? formatDate(sub.due_date) : 'senza data';
+  return `
+    <div class="subtask-row ${draggable ? 'draggable' : ''}" data-subtask-id="${sub.id}" ${draggable ? 'draggable="true"' : ''}>
+      ${draggable ? '<span class="drag-handle">⠿</span>' : ''}
+      <div class="checkbox ${sub.done ? 'checked' : ''}" data-toggle-sub="${sub.id}"></div>
+      <div class="subtask-body" data-edit-sub="${sub.id}">
+        <div class="subtask-title ${sub.done ? 'done' : ''}">${escapeHtml(sub.title)}</div>
+        <div class="subtask-meta">
+          <span class="date-badge ${!sub.due_date ? 'empty' : ''}">${dateLabel}</span>
+          <span class="chi-badge ${!sub.chi ? 'empty' : ''}">${sub.chi || '—'}</span>
+        </div>
       </div>
-      <div class="task-actions">
-        <button class="icon-btn" data-delete="${sub.id}">🗑</button>
-      </div>
+      <button class="subtask-delete-btn" data-delete-task="${sub.id}">🗑</button>
     </div>
   `;
 }
@@ -749,18 +782,71 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// Delegazione eventi sulla lista (checkbox, delete, add sottotask)
-document.getElementById('taskList').addEventListener('click', (e) => {
-  const toggleId = e.target.dataset.toggle;
-  const deleteId = e.target.dataset.delete;
-  const addSubId = e.target.dataset.addSub;
+// ================= EVENTI: espansione, checkbox, delete, drag =================
 
-  if (toggleId) return toggleTaskDone(toggleId);
-  if (deleteId) return deleteTask(deleteId);
-  if (addSubId) {
-    const title = prompt('Titolo del sottotask:');
-    if (title && title.trim()) addTask(title, addSubId);
+document.getElementById('taskList').addEventListener('click', (e) => {
+  const expandId = e.target.closest('[data-toggle-expand]')?.dataset.toggleExpand;
+  const toggleSubId = e.target.dataset.toggleSub;
+  const deleteId = e.target.dataset.deleteTask;
+  const addSubId = e.target.dataset.addSub;
+  const editSubId = e.target.closest('[data-edit-sub]')?.dataset.editSub;
+
+  if (toggleSubId) { toggleSubtaskDone(toggleSubId); return; }
+  if (deleteId) { e.stopPropagation(); deleteTask(deleteId); return; }
+  if (addSubId) { openSubtaskModal({ mode: 'new', parentId: addSubId }); return; }
+  if (editSubId) { openSubtaskModal({ mode: 'edit', taskId: editSubId }); return; }
+  if (expandId) {
+    if (expanded.has(expandId)) expanded.delete(expandId); else expanded.add(expandId);
+    render();
   }
+});
+
+// drag & drop per riordinare i sottotask senza data
+document.getElementById('taskList').addEventListener('dragstart', (e) => {
+  const row = e.target.closest('.subtask-row.draggable');
+  if (!row) return;
+  const panel = row.closest('[data-subtasks-of]');
+  dragState = { parentId: panel.dataset.subtasksOf, draggedId: row.dataset.subtaskId };
+  e.dataTransfer.effectAllowed = 'move';
+});
+
+document.getElementById('taskList').addEventListener('dragover', (e) => {
+  const row = e.target.closest('.subtask-row.draggable');
+  if (!row || !dragState) return;
+  e.preventDefault();
+  row.classList.add('drag-over');
+});
+
+document.getElementById('taskList').addEventListener('dragleave', (e) => {
+  const row = e.target.closest('.subtask-row.draggable');
+  if (row) row.classList.remove('drag-over');
+});
+
+document.getElementById('taskList').addEventListener('drop', (e) => {
+  const row = e.target.closest('.subtask-row.draggable');
+  if (!row || !dragState) return;
+  e.preventDefault();
+  row.classList.remove('drag-over');
+
+  const targetId = row.dataset.subtaskId;
+  if (targetId === dragState.draggedId) { dragState = null; return; }
+
+  const subs = getSubtasks(dragState.parentId).filter(s => !s.due_date).sort((a, b) => a.position - b.position);
+  const fromIdx = subs.findIndex(s => s.id === dragState.draggedId);
+  const toIdx = subs.findIndex(s => s.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) { dragState = null; return; }
+
+  const [moved] = subs.splice(fromIdx, 1);
+  subs.splice(toIdx, 0, moved);
+  subs.forEach((s, i) => {
+    s.position = i;
+    const t = tasks.find(x => x.id === s.id);
+    if (t) t.position = i;
+  });
+  saveTasksToLocal();
+  render();
+  subs.forEach(s => saveTaskToDB(s));
+  dragState = null;
 });
 
 // Composer per nuovi task principali
@@ -769,12 +855,69 @@ document.getElementById('composerForm').addEventListener('submit', (e) => {
   const input = document.getElementById('composerInput');
   const title = input.value.trim();
   if (!title) return;
-  if (!currentUser) {
-    openAuthModal();
-    return;
-  }
-  addTask(title, null);
+  if (!currentUser) { openAuthModal(); return; }
+  addParentTask(title);
   input.value = '';
+});
+
+// ================= MODALE SOTTOTASK =================
+
+function openSubtaskModal({ mode, parentId, taskId }) {
+  subtaskModalContext = { mode, parentId, taskId, selectedChi: '' };
+  const titleInput = document.getElementById('subtaskTitleInput');
+  const dateInput = document.getElementById('subtaskDateInput');
+  document.getElementById('subtaskModalTitle').textContent = mode === 'edit' ? 'Modifica sottotask' : 'Nuovo sottotask';
+
+  if (mode === 'edit') {
+    const t = tasks.find(x => x.id === taskId);
+    titleInput.value = t?.title || '';
+    dateInput.value = t?.due_date || '';
+    subtaskModalContext.selectedChi = t?.chi || '';
+    subtaskModalContext.parentId = t?.parent_id;
+  } else {
+    titleInput.value = '';
+    dateInput.value = '';
+  }
+  updateChiButtons();
+  document.getElementById('subtaskModalBackdrop').classList.remove('hidden');
+  titleInput.focus();
+}
+
+function closeSubtaskModal() {
+  document.getElementById('subtaskModalBackdrop').classList.add('hidden');
+  subtaskModalContext = null;
+}
+
+function updateChiButtons() {
+  document.querySelectorAll('#chiOptions button').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.chi === (subtaskModalContext?.selectedChi || ''));
+  });
+}
+
+document.getElementById('chiOptions').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-chi]');
+  if (!btn || !subtaskModalContext) return;
+  subtaskModalContext.selectedChi = btn.dataset.chi;
+  updateChiButtons();
+});
+
+document.getElementById('subtaskModalClose').addEventListener('click', closeSubtaskModal);
+
+document.getElementById('subtaskSaveBtn').addEventListener('click', () => {
+  if (!subtaskModalContext) return;
+  const title = document.getElementById('subtaskTitleInput').value.trim();
+  if (!title) return;
+  const due_date = document.getElementById('subtaskDateInput').value || null;
+  const chi = subtaskModalContext.selectedChi || null;
+
+  if (subtaskModalContext.mode === 'edit') {
+    addOrUpdateSubtask({ id: subtaskModalContext.taskId, title, due_date, chi });
+  } else {
+    addOrUpdateSubtask({ parentId: subtaskModalContext.parentId, title, due_date, chi });
+    expanded.add(subtaskModalContext.parentId);
+  }
+  closeSubtaskModal();
+  render();
 });
 
 // ================= AUTENTICAZIONE =================
@@ -783,16 +926,10 @@ function openAuthModal() {
   document.getElementById('authModalBackdrop').classList.remove('hidden');
   document.getElementById('authError').classList.remove('visible');
 }
-function closeAuthModal() {
-  document.getElementById('authModalBackdrop').classList.add('hidden');
-}
+function closeAuthModal() { document.getElementById('authModalBackdrop').classList.add('hidden'); }
 
 document.getElementById('userPill').addEventListener('click', () => {
-  if (currentUser) {
-    openSettingsModal();
-  } else {
-    openAuthModal();
-  }
+  if (currentUser) openSettingsModal(); else openAuthModal();
 });
 document.getElementById('authModalClose').addEventListener('click', closeAuthModal);
 
@@ -801,8 +938,7 @@ document.getElementById('authToggleMode').addEventListener('click', () => {
   document.getElementById('authModalTitle').textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
   document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
   document.getElementById('authToggleMode').textContent = authMode === 'login'
-    ? 'Non hai un account? Registrati'
-    : 'Hai già un account? Accedi';
+    ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi';
 });
 
 document.getElementById('authSubmitBtn').addEventListener('click', async () => {
@@ -810,13 +946,11 @@ document.getElementById('authSubmitBtn').addEventListener('click', async () => {
   const password = document.getElementById('authPassword').value;
   const errorEl = document.getElementById('authError');
   errorEl.classList.remove('visible');
-
   if (!email || !password) {
     errorEl.textContent = 'Inserisci email e password.';
     errorEl.classList.add('visible');
     return;
   }
-
   try {
     if (authMode === 'login') {
       const { error } = await sb.auth.signInWithPassword({ email, password });
@@ -847,28 +981,19 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 sb.auth.onAuthStateChange((event, session) => {
   currentUser = session?.user ?? null;
-  const emailEl = document.getElementById('userEmail');
-  emailEl.textContent = currentUser ? currentUser.email : 'accedi';
-
-  if (currentUser) {
-    fetchTasksFromDB();
-    flushPendingSync();
-  } else {
-    tasks = [];
-    render();
-  }
+  document.getElementById('userEmail').textContent = currentUser ? currentUser.email : 'accedi';
+  if (currentUser) { fetchTasksFromDB(); flushPendingSync(); }
+  else { tasks = []; render(); }
 });
 
-// ================= LIFECYCLE: quando risincronizzare =================
+// ================= LIFECYCLE =================
 
 window.addEventListener('online', flushPendingSync);
 window.addEventListener('focus', flushPendingSync);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') flushPendingSync();
 });
-setInterval(() => {
-  if (navigator.onLine) flushPendingSync();
-}, 10000);
+setInterval(() => { if (navigator.onLine) flushPendingSync(); }, 10000);
 
 // ================= AVVIO =================
 
@@ -878,9 +1003,7 @@ updateSyncIndicator();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js');
-    });
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
   }
 </script>
 </body>

@@ -12,12 +12,16 @@ create table if not exists public."Task_items" (
   parent_id   uuid references public."Task_items"(id) on delete cascade,  -- null = task principale, valorizzato = sottotask
   title       text not null,
   notes       text,
+  chi         text,                                       -- solo sui sottotask: 'M' | 'C' | 'M+C'
   done        boolean not null default false,
-  position    integer not null default 0,                -- per l'ordinamento manuale
+  position    integer not null default 0,                -- ordinamento manuale dei sottotask senza data
   due_date    date,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- Se la tabella esiste già da prima (creata senza la colonna "chi"):
+alter table public."Task_items" add column if not exists chi text;
 
 -- Indici utili
 create index if not exists task_items_user_id_idx on public."Task_items" (user_id);

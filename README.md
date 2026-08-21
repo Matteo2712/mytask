@@ -45,6 +45,21 @@ progetto "todolist").
 
 - Ogni task ha un `id` generato lato client (`crypto.randomUUID()`) e un
   `parent_id`: `null` = task principale, valorizzato = sottotask di quel task.
+- **Lista task principali**: ogni riga mostra solo titolo, progresso
+  (`fatti/totali`), "Prossima data" e "Prossimo passo" — calcolati dai
+  sottotask non completati, ordinati per data (i senza-data seguono, nel
+  loro ordine manuale). I task senza una prossima data scivolano in fondo
+  alla lista generale.
+- **Click sul task** → si espande ad albero la lista dei sottotask, ognuno
+  con: titolo, data, "chi" (M / C / M+C) e checkbox "fatto". Click sul
+  corpo del sottotask per modificarne titolo/data/chi.
+  I sottotask sono ordinati per data crescente; quelli senza data stanno in
+  fondo e si riordinano trascinandoli (drag & drop, salvato nel campo
+  `position`).
+- Quando segni un sottotask come fatto, "Prossimo passo" e "Prossima data"
+  del task padre si aggiornano subito al sottotask successivo (con o senza
+  data), e la posizione del task nella lista generale si ricalcola di
+  conseguenza.
 - Le scritture passano prima da `localStorage` (l'app funziona sempre,
   anche offline), poi tentano Supabase; se falliscono vengono accodate in
   `mt_pending_sync` e ritentate quando torna la connessione (evento
