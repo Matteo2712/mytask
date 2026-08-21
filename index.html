@@ -347,20 +347,6 @@ main {
 .note-save-btn { background: var(--accent); color: white; }
 .note-cancel-btn { background: var(--bg-elevated); color: var(--text-dim); border: 1px solid var(--border) !important; }
 
-/* ---------- Sync Calendar button ---------- */
-
-.sync-cal-btn {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12.5px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.sync-cal-btn:active { background: var(--bg); }
-
 /* ---------- Composer ---------- */
 
 .composer {
@@ -500,7 +486,6 @@ main {
   <header class="app-header">
     <div class="logo">My<span class="accent">Task</span></div>
     <div style="display:flex; align-items:center; gap:8px;">
-      <button class="sync-cal-btn" id="syncCalBtn" title="Confronta le date con Google Calendar (richiede a Claude di eseguire il check)">Sync Calendar</button>
       <div class="user-pill" id="userPill">
         <span class="sync-dot" id="syncDot"></span>
         <span class="user-email" id="userEmail">accedi</span>

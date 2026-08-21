@@ -3,7 +3,12 @@
 // I dati (Supabase) NON passano da qui: li gestisce app.js con la coda
 // localStorage-first descritta nel playbook.
 
-const CACHE_NAME = 'mytask-cache-v6';
+// Nome cache fisso: non serve più incrementarlo a ogni deploy.
+// index.html (e le altre pagine HTML/navigazioni) usano network-first,
+// quindi arriva sempre l'ultima versione pubblicata quando c'è connessione;
+// solo se sei offline si usa la copia in cache. Gli altri asset statici
+// (manifest, icone) restano cache-first per velocità.
+const CACHE_NAME = 'mytask-cache-v1';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -41,6 +46,27 @@ self.addEventListener('fetch', (event) => {
 
   if (request.method !== 'GET') return;
 
+  // Navigazioni (apertura app / index.html): network-first, così l'ultima
+  // versione pubblicata arriva sempre subito, senza dover cambiare questo
+  // file a ogni release. Fallback alla cache solo se sei offline.
+  const isNavigation =
+    request.mode === 'navigate' || request.url.endsWith('/index.html') || request.url.endsWith('/');
+
+  if (isNavigation) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('/index.html')))
+    );
+    return;
+  }
+
+  // Altri asset statici (manifest, icone): cache-first, con aggiornamento
+  // in background della cache.
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
