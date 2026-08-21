@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>MyTask</title>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<style>
+:root {
+  --accent: #3b82f6;
+  --bg: #0f172a;
+  --bg-elevated: #1e293b;
+  --bg-card: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-dim: #94a3b8;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ---------- Header ---------- */
+
+header.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 14px;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.logo .accent { color: var(--accent); }
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  max-width: 60%;
+}
+
+.sync-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+.sync-dot.syncing { background: var(--warning); animation: pulse 1s infinite; }
+.sync-dot.pending { background: var(--danger); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.user-email {
+  font-size: 13px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Main / task list ---------- */
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 100px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-dim);
+  margin-top: 60px;
+  font-size: 14px;
+}
+
+.task {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.checkbox.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.checkbox.checked::after {
+  content: "✓";
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.task-body { flex: 1; min-width: 0; }
+
+.task-title {
+  font-size: 15px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+.task-title.done {
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+
+.task-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.icon-btn:active { background: var(--bg); }
+
+.subtasks {
+  border-top: 1px solid var(--border);
+  padding: 4px 14px 8px 40px;
+}
+
+.subtask-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 0;
+}
+.subtask-row .checkbox { width: 18px; height: 18px; }
+.subtask-row .task-title { font-size: 14px; }
+
+.add-subtask-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+/* ---------- Composer (aggiungi task) ---------- */
+
+.composer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+}
+
+.composer form {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 6px 6px 14px;
+}
+
+.composer input[type="text"] {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+.composer input::placeholder { color: var(--text-dim); }
+
+.composer button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ---------- Modal (auth / settings) ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-backdrop.hidden { display: none; }
+
+.modal {
+  background: var(--bg-elevated);
+  width: 100%;
+  max-width: 640px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal h2 { margin: 0 0 16px; font-size: 18px; }
+
+.modal label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 12px 0 6px;
+}
+
+.modal input[type="email"],
+.modal input[type="password"] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+
+.modal .primary-btn {
+  width: 100%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 18px;
+  cursor: pointer;
+}
+
+.modal .secondary-btn {
+  width: 100%;
+  background: none;
+  color: var(--text-dim);
+  border: none;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.modal .danger-btn {
+  width: 100%;
+  background: none;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  margin-top: 18px;
+  cursor: pointer;
+}
+
+.modal .close-x {
+  float: right;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 10px;
+  display: none;
+}
+.form-error.visible { display: block; }
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.settings-row:last-of-type { border-bottom: none; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="app-header">
+    <div class="logo">My<span class="accent">Task</span></div>
+    <div class="user-pill" id="userPill">
+      <span class="sync-dot" id="syncDot"></span>
+      <span class="user-email" id="userEmail">accedi</span>
+    </div>
+  </header>
+
+  <main id="taskList">
+    <div class="empty-state" id="emptyState">Nessun task ancora. Aggiungine uno qui sotto.</div>
+  </main>
+
+  <div class="composer">
+    <form id="composerForm">
+      <input type="text" id="composerInput" placeholder="Nuovo task…" autocomplete="off">
+      <button type="submit">＋</button>
+    </form>
+  </div>
+
+  <!-- Modale autenticazione -->
+  <div class="modal-backdrop hidden" id="authModalBackdrop">
+    <div class="modal">
+      <button class="close-x" id="authModalClose">✕</button>
+      <h2 id="authModalTitle">Accedi</h2>
+
+      <label for="authEmail">Email</label>
+      <input type="email" id="authEmail" autocomplete="email">
+
+      <label for="authPassword">Password</label>
+      <input type="password" id="authPassword" autocomplete="current-password">
+
+      <div class="form-error" id="authError"></div>
+
+      <button class="primary-btn" id="authSubmitBtn">Accedi</button>
+      <button class="secondary-btn" id="authToggleMode">Non hai un account? Registrati</button>
+    </div>
+  </div>
+
+  <!-- Modale impostazioni (utente loggato) -->
+  <div class="modal-backdrop hidden" id="settingsModalBackdrop">
+    <div class="modal">
+      <button class="close-x" id="settingsModalClose">✕</button>
+      <h2>Impostazioni</h2>
+
+      <div class="settings-row">
+        <span>Account</span>
+        <span id="settingsEmail" style="color:var(--text-dim)"></span>
+      </div>
+      <div class="settings-row">
+        <span>Stato sync</span>
+        <span id="settingsSyncStatus" style="color:var(--text-dim)"></span>
+      </div>
+
+      <button class="danger-btn" id="logoutBtn">Esci</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// MyTask — logica applicativa
+// Pattern riusati dal playbook CaliMat: localStorage-first, coda di sync con
+// retry, ID generati lato client, indicatore di stato nel pill in alto a destra.
+
+const SUPABASE_URL = 'https://edlvmkjctzhqoswpppds.supabase.co/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbHZta2pjdHpocW9zd3BwcGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjEyMDEsImV4cCI6MjA5NjczNzIwMX0.Oq0TyYWG4LotZhH57LQtklUdVho_kQ15KlSs8KGO2AM';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ---------- Chiavi localStorage ----------
+const LS_TASKS = 'mt_tasks';
+const LS_PENDING_SYNC = 'mt_pending_sync';
+const MAX_RETRIES = 8;
+
+// ---------- Stato in memoria ----------
+let currentUser = null;
+let tasks = [];        // array piatto, ordinato per position
+let authMode = 'login'; // 'login' | 'signup'
+
+// ================= UTILITY LOCALSTORAGE =================
+
+function loadTasksFromLocal() {
+  try {
+    const raw = localStorage.getItem(LS_TASKS);
+    tasks = raw ? JSON.parse(raw) : [];
+  } catch {
+    tasks = [];
+  }
+}
+
+function saveTasksToLocal() {
+  localStorage.setItem(LS_TASKS, JSON.stringify(tasks));
+}
+
+function loadPendingQueue() {
+  try {
+    const raw = localStorage.getItem(LS_PENDING_SYNC);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePendingQueue(queue) {
+  localStorage.setItem(LS_PENDING_SYNC, JSON.stringify(queue));
+  updateSyncIndicator();
+}
+
+function enqueueSync(fnName, args) {
+  const queue = loadPendingQueue();
+  queue.push({
+    fn: fnName,
+    args,
+    ts: Date.now(),
+    attempts: 0,
+  });
+  savePendingQueue(queue);
+}
+
+// ================= INDICATORE DI STATO SYNC =================
+
+function updateSyncIndicator(state) {
+  const dot = document.getElementById('syncDot');
+  if (!dot) return;
+  const pending = loadPendingQueue().length;
+
+  dot.classList.remove('syncing', 'pending');
+  if (state === 'syncing') {
+    dot.classList.add('syncing');
+  } else if (pending > 0) {
+    dot.classList.add('pending');
+  }
+
+  const settingsStatus = document.getElementById('settingsSyncStatus');
+  if (settingsStatus) {
+    settingsStatus.textContent = pending > 0
+      ? `${pending} modifiche in coda`
+      : 'Tutto sincronizzato';
+  }
+}
+
+// ================= FUNZIONI DB (con coda offline) =================
+
+async function saveTaskToDB(task) {
+  try {
+    const { error } = await sb.from('Task_items').upsert({
+      id: task.id,
+      user_id: currentUser.id,
+      parent_id: task.parent_id,
+      title: task.title,
+      notes: task.notes ?? null,
+      done: task.done,
+      position: task.position,
+      due_date: task.due_date ?? null,
+    });
+    if (error) throw error;
+    updateSyncIndicator();
+  } catch (err) {
+    console.warn('saveTaskToDB fallita, accodo:', err.message);
+    enqueueSync('saveTaskToDB', [task]);
+  }
+}
+
+async function deleteTaskToDB(taskId) {
+  try {
+    const { error } = await sb.from('Task_items').delete().eq('id', taskId);
+    if (error) throw error;
+    updateSyncIndicator();
+  } catch (err) {
+    console.warn('deleteTaskToDB fallita, accodo:', err.message);
+    enqueueSync('deleteTaskToDB', [taskId]);
+  }
+}
+
+const DB_FUNCTIONS = { saveTaskToDB, deleteTaskToDB };
+
+async function flushPendingSync() {
+  if (!currentUser || !navigator.onLine) return;
+  let queue = loadPendingQueue();
+  if (queue.length === 0) return;
+
+  updateSyncIndicator('syncing');
+
+  // Rinfresca la sessione prima di ritentare: un token scaduto durante il
+  // periodo offline farebbe fallire ogni retry.
+  try {
+    await sb.auth.refreshSession();
+  } catch {
+    // se il refresh fallisce si tenta comunque il flush, gestirà l'errore per item
+  }
+
+  const remaining = [];
+  for (const item of queue) {
+    if (item.attempts >= MAX_RETRIES) {
+      remaining.push(item); // resta in coda ma non si ritenta più in automatico
+      continue;
+    }
+    try {
+      const fn = DB_FUNCTIONS[item.fn];
+      const { error } = await callRaw(item.fn, item.args);
+      if (error) throw error;
+    } catch (err) {
+      item.attempts += 1;
+      remaining.push(item);
+    }
+  }
+
+  savePendingQueue(remaining);
+  updateSyncIndicator();
+}
+
+// Esegue la chiamata Supabase "grezza" (senza ri-accodare in caso di fallimento,
+// ci pensa flushPendingSync incrementando gli attempts).
+async function callRaw(fnName, args) {
+  if (fnName === 'saveTaskToDB') {
+    const task = args[0];
+    return await sb.from('Task_items').upsert({
+      id: task.id,
+      user_id: currentUser.id,
+      parent_id: task.parent_id,
+      title: task.title,
+      notes: task.notes ?? null,
+      done: task.done,
+      position: task.position,
+      due_date: task.due_date ?? null,
+    });
+  }
+  if (fnName === 'deleteTaskToDB') {
+    const taskId = args[0];
+    return await sb.from('Task_items').delete().eq('id', taskId);
+  }
+  return { error: new Error('funzione sconosciuta: ' + fnName) };
+}
+
+async function fetchTasksFromDB() {
+  if (!currentUser || !navigator.onLine) return;
+  try {
+    const { data, error } = await sb
+      .from('Task_items')
+      .select('*')
+      .order('position', { ascending: true });
+    if (error) throw error;
+    tasks = data.map(mapDbRowToTask);
+    saveTasksToLocal();
+    render();
+  } catch (err) {
+    console.warn('fetchTasksFromDB fallita, resto sui dati locali:', err.message);
+  }
+}
+
+function mapDbRowToTask(row) {
+  return {
+    id: row.id,
+    parent_id: row.parent_id,
+    title: row.title,
+    notes: row.notes,
+    done: row.done,
+    position: row.position,
+    due_date: row.due_date,
+  };
+}
+
+// ================= LOGICA TASK / SOTTOTASK =================
+
+function addTask(title, parentId = null) {
+  const siblings = tasks.filter(t => t.parent_id === parentId);
+  const task = {
+    id: crypto.randomUUID(),
+    parent_id: parentId,
+    title: title.trim(),
+    notes: null,
+    done: false,
+    position: siblings.length,
+    due_date: null,
+  };
+  tasks.push(task);
+  saveTasksToLocal();
+  render();
+  saveTaskToDB(task);
+}
+
+function toggleTaskDone(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.done = !task.done;
+  saveTasksToLocal();
+  render();
+  saveTaskToDB(task);
+}
+
+function deleteTask(taskId) {
+  // elimina anche i sottotask figli (coerente col cascade lato DB)
+  const idsToDelete = new Set([taskId]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const t of tasks) {
+      if (idsToDelete.has(t.parent_id) && !idsToDelete.has(t.id)) {
+        idsToDelete.add(t.id);
+        changed = true;
+      }
+    }
+  }
+  tasks = tasks.filter(t => !idsToDelete.has(t.id));
+  saveTasksToLocal();
+  render();
+  deleteTaskToDB(taskId); // il cascade su Supabase elimina i figli lato server
+}
+
+// ================= RENDER =================
+
+function render() {
+  const listEl = document.getElementById('taskList');
+  const rootTasks = tasks
+    .filter(t => t.parent_id === null)
+    .sort((a, b) => a.position - b.position);
+
+  listEl.innerHTML = '';
+
+  if (!currentUser) {
+    listEl.innerHTML = '<div class="empty-state">Accedi per vedere e sincronizzare i tuoi task.</div>';
+    return;
+  }
+
+  if (rootTasks.length === 0) {
+    listEl.innerHTML = '<div class="empty-state">Nessun task ancora. Aggiungine uno qui sotto.</div>';
+    return;
+  }
+
+  for (const task of rootTasks) {
+    listEl.appendChild(renderTaskCard(task));
+  }
+}
+
+function renderTaskCard(task) {
+  const card = document.createElement('div');
+  card.className = 'task';
+
+  const subtasks = tasks
+    .filter(t => t.parent_id === task.id)
+    .sort((a, b) => a.position - b.position);
+  const doneCount = subtasks.filter(s => s.done).length;
+
+  card.innerHTML = `
+    <div class="task-row">
+      <div class="checkbox ${task.done ? 'checked' : ''}" data-toggle="${task.id}"></div>
+      <div class="task-body">
+        <div class="task-title ${task.done ? 'done' : ''}">${escapeHtml(task.title)}</div>
+        ${subtasks.length ? `<div class="task-meta"><span>${doneCount}/${subtasks.length} sottotask</span></div>` : ''}
+      </div>
+      <div class="task-actions">
+        <button class="icon-btn" data-delete="${task.id}">🗑</button>
+      </div>
+    </div>
+    <div class="subtasks">
+      ${subtasks.map(renderSubtaskRow).join('')}
+      <button class="add-subtask-btn" data-add-sub="${task.id}">+ sottotask</button>
+    </div>
+  `;
+  return card;
+}
+
+function renderSubtaskRow(sub) {
+  return `
+    <div class="subtask-row">
+      <div class="checkbox ${sub.done ? 'checked' : ''}" data-toggle="${sub.id}"></div>
+      <div class="task-body">
+        <div class="task-title ${sub.done ? 'done' : ''}">${escapeHtml(sub.title)}</div>
+      </div>
+      <div class="task-actions">
+        <button class="icon-btn" data-delete="${sub.id}">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Delegazione eventi sulla lista (checkbox, delete, add sottotask)
+document.getElementById('taskList').addEventListener('click', (e) => {
+  const toggleId = e.target.dataset.toggle;
+  const deleteId = e.target.dataset.delete;
+  const addSubId = e.target.dataset.addSub;
+
+  if (toggleId) return toggleTaskDone(toggleId);
+  if (deleteId) return deleteTask(deleteId);
+  if (addSubId) {
+    const title = prompt('Titolo del sottotask:');
+    if (title && title.trim()) addTask(title, addSubId);
+  }
+});
+
+// Composer per nuovi task principali
+document.getElementById('composerForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = document.getElementById('composerInput');
+  const title = input.value.trim();
+  if (!title) return;
+  if (!currentUser) {
+    openAuthModal();
+    return;
+  }
+  addTask(title, null);
+  input.value = '';
+});
+
+// ================= AUTENTICAZIONE =================
+
+function openAuthModal() {
+  document.getElementById('authModalBackdrop').classList.remove('hidden');
+  document.getElementById('authError').classList.remove('visible');
+}
+function closeAuthModal() {
+  document.getElementById('authModalBackdrop').classList.add('hidden');
+}
+
+document.getElementById('userPill').addEventListener('click', () => {
+  if (currentUser) {
+    openSettingsModal();
+  } else {
+    openAuthModal();
+  }
+});
+document.getElementById('authModalClose').addEventListener('click', closeAuthModal);
+
+document.getElementById('authToggleMode').addEventListener('click', () => {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('authModalTitle').textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
+  document.getElementById('authToggleMode').textContent = authMode === 'login'
+    ? 'Non hai un account? Registrati'
+    : 'Hai già un account? Accedi';
+});
+
+document.getElementById('authSubmitBtn').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errorEl = document.getElementById('authError');
+  errorEl.classList.remove('visible');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Inserisci email e password.';
+    errorEl.classList.add('visible');
+    return;
+  }
+
+  try {
+    if (authMode === 'login') {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    } else {
+      const { error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+    }
+    closeAuthModal();
+  } catch (err) {
+    errorEl.textContent = err.message || 'Errore, riprova.';
+    errorEl.classList.add('visible');
+  }
+});
+
+function openSettingsModal() {
+  document.getElementById('settingsEmail').textContent = currentUser?.email ?? '';
+  updateSyncIndicator();
+  document.getElementById('settingsModalBackdrop').classList.remove('hidden');
+}
+document.getElementById('settingsModalClose').addEventListener('click', () => {
+  document.getElementById('settingsModalBackdrop').classList.add('hidden');
+});
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  document.getElementById('settingsModalBackdrop').classList.add('hidden');
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  currentUser = session?.user ?? null;
+  const emailEl = document.getElementById('userEmail');
+  emailEl.textContent = currentUser ? currentUser.email : 'accedi';
+
+  if (currentUser) {
+    fetchTasksFromDB();
+    flushPendingSync();
+  } else {
+    tasks = [];
+    render();
+  }
+});
+
+// ================= LIFECYCLE: quando risincronizzare =================
+
+window.addEventListener('online', flushPendingSync);
+window.addEventListener('focus', flushPendingSync);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') flushPendingSync();
+});
+setInterval(() => {
+  if (navigator.onLine) flushPendingSync();
+}, 10000);
+
+// ================= AVVIO =================
+
+loadTasksFromLocal();
+render();
+updateSyncIndicator();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+</script>
+</body>
+</html>
