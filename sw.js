@@ -3,7 +3,7 @@
 // I dati (Supabase) NON passano da qui: li gestisce app.js con la coda
 // localStorage-first descritta nel playbook.
 
-const CACHE_NAME = 'mytask-cache-v1';
+const CACHE_NAME = 'mytask-cache-v3';
 const PRECACHE_URLS = [
   '/',
   '/index.html',

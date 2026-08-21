@@ -121,32 +121,18 @@ main {
   font-weight: 600;
   line-height: 1.3;
   word-break: break-word;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
-
-.progress-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-  background: rgba(59,130,246,0.12);
-  padding: 1px 7px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-.progress-badge.complete { color: var(--success); background: rgba(34,197,94,0.12); }
 
 .task-info-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-top: 5px;
   font-size: 12.5px;
   color: var(--text-dim);
 }
-.task-info-row .info-label { color: var(--text-dim); opacity: 0.75; margin-right: 3px; }
-.task-info-row .info-value { color: var(--text); }
+.task-info-row .info-value { color: var(--text-dim); }
 .task-info-row .no-date { opacity: 0.6; font-style: italic; }
+.task-info-row .sep { opacity: 0.4; }
 
 .expand-arrow {
   color: var(--text-dim);
@@ -156,15 +142,30 @@ main {
 }
 .expand-arrow.open { transform: rotate(90deg); }
 
+.progress-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(59,130,246,0.12);
+  padding: 3px 0;
+  border-radius: 999px;
+  flex-shrink: 0;
+  width: 40px;
+  text-align: center;
+}
+.progress-badge.complete { color: var(--success); background: rgba(34,197,94,0.12); }
+
 .task-delete-btn {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 15px;
   padding: 4px 2px;
   cursor: pointer;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
+.task-delete-btn svg, .subtask-delete-btn svg { width: 17px; height: 17px; }
 
 /* ---------- Subtasks ---------- */
 
@@ -231,10 +232,11 @@ main {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 14px;
   padding: 4px;
   cursor: pointer;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .drag-handle {
@@ -480,6 +482,14 @@ let authMode = 'login';
 let expanded = new Set();      // id dei task padre attualmente espansi
 let subtaskModalContext = null; // { mode: 'new'|'edit', parentId, taskId, selectedChi }
 let dragState = null;           // { parentId, draggedId }
+
+const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 6h18"></path>
+  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+  <line x1="10" y1="11" x2="10" y2="17"></line>
+  <line x1="14" y1="11" x2="14" y2="17"></line>
+</svg>`;
 
 // ================= LOCALSTORAGE =================
 
@@ -731,16 +741,14 @@ function renderTaskCard(task, info) {
     <div class="task-row" data-toggle-expand="${task.id}">
       <span class="expand-arrow ${isOpen ? 'open' : ''}">▶</span>
       <div class="task-main">
-        <div class="task-title">
-          ${escapeHtml(task.title)}
-          <span class="progress-badge ${progressComplete ? 'complete' : ''}">${info.doneCount}/${info.total}</span>
-        </div>
+        <div class="task-title">${escapeHtml(task.title)}</div>
         <div class="task-info-row">
-          <span><span class="info-label">Prossima data:</span><span class="info-value ${!info.nextDate ? 'no-date' : ''}">${nextDateLabel}</span></span>
-          <span><span class="info-label">Prossimo passo:</span><span class="info-value">${escapeHtml(nextStepLabel)}</span></span>
+          <span class="info-value ${!info.nextDate ? 'no-date' : ''}">${nextDateLabel}</span>
+          ${info.total > 0 ? `<span class="sep">·</span><span class="info-value">${escapeHtml(nextStepLabel)}</span>` : ''}
         </div>
       </div>
-      <button class="task-delete-btn" data-delete-task="${task.id}">🗑</button>
+      <span class="progress-badge ${progressComplete ? 'complete' : ''}">${info.doneCount}/${info.total}</span>
+      <button class="task-delete-btn" data-delete-task="${task.id}">${TRASH_SVG}</button>
     </div>
     ${isOpen ? renderSubtasksPanel(task.id) : ''}
   `;
@@ -771,7 +779,7 @@ function renderSubtaskRow(sub) {
           <span class="chi-badge ${!sub.chi ? 'empty' : ''}">${sub.chi || '—'}</span>
         </div>
       </div>
-      <button class="subtask-delete-btn" data-delete-task="${sub.id}">🗑</button>
+      <button class="subtask-delete-btn" data-delete-task="${sub.id}">${TRASH_SVG}</button>
     </div>
   `;
 }
